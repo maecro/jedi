@@ -1,7 +1,10 @@
 class HomeController < ApplicationController
-  skip_before_filter :require_login
 
   def index
+    unless @facebook_cookies == nil then
+    @access_token = @facebook_cookies["access_token"]
+    @graph = Koala::Facebook::GraphAPI.new(@access_token)
+    end
   end
 
 end

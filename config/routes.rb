@@ -1,16 +1,5 @@
 Glbook::Application.routes.draw do
-  get "oauths/oauth"
-
-  get "oauths/callback"
-
-  resources :user_sessions
-  resources :users
-
-  match 'login' => 'user_sessions#new', :as => :login
-  match 'logout' => 'user_sessions#destroy', :as => :logout
-
-  match "oauth/callback" => "oauths#callback"
-  match "oauth/:provider" => "oauths#oauth", :as => :auth_at_provider
+  match '/auth/:provider/callback' => 'application#authenticate'
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
