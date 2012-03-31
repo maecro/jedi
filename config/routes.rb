@@ -1,5 +1,6 @@
 Glbook::Application.routes.draw do
   match '/auth/:provider/callback' => 'application#authenticate'
+  match '/get_picture' => 'application#get_picture'
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
