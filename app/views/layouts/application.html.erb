@@ -68,6 +68,7 @@
               <% if @facebook_cookies == nil then %>
               <li><%=link_to_function "Login", "login();" %></li>
               <% else %>
+              <li><%= link_to_function "Start", "webGLStart();" %></li>
               <li><%= link_to_function "Logout", "logout();" %></li>
               <% end %>
             </ul>

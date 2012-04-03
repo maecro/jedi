@@ -1,18 +1,14 @@
-var node;
-
-function addNode() {
-  //Load models
-  node = new PhiloGL.O3D.Sphere({ nlat: 20, nlong: 20, radius: 1, colors: [1, 0, 0, 1] });
-
-}
+var nodes;
 
 function webGLStart() {
+
+  nodes = getNodes();
 
   //Create application
   PhiloGL('canvas', {
     camera: {
       position: {
-        x: 0, y: 0, z: -7
+        x: 0, y: 0, z: -20
       }
     },
     onError: function() {
@@ -33,7 +29,21 @@ function webGLStart() {
       gl.depthFunc(gl.LEQUAL);
       gl.viewport(0, 0, +canvas.width, +canvas.height);
       //Add object to the scene
-      scene.add(node);
+      var xval, yval, zval;
+      xval = yval = zval = 0
+
+      console.log(nodes)
+
+      $.each(nodes, function(index, value) {
+        value.position = {
+          x: xval += 1,
+          y: yval,
+          z: zval
+        };
+        value.update();
+        scene.add(value);
+      });
+
       //Animate
       draw();
 
