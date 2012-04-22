@@ -89,8 +89,8 @@ Jedi = function() {
         if(graph.addNode(n)) {
           addThreeSphere(n);
           addThreeLight();
-          //nodes.push(n);
-          //addEdge(n);
+          nodes.push(n);
+          addEdge(n);
         }
       });
     });
