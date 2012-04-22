@@ -7,5 +7,4 @@
 //= require jquery
 //= require jquery_ujs
 //= require twitter/bootstrap
-//= require PhiloGL
 //= require_tree .

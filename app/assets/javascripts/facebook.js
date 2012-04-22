@@ -28,9 +28,8 @@ function getNodes() {
   nodes.push(new PhiloGL.O3D.Sphere({ nlat: 20, nlong: 20, radius: 1, colors: [1, 0, 0, 1] }));
 
   FB.api('/me/friends', function(response) {
-//console.log(response);
+
     $.each(response.data, function(key, val) {
-   // console.log(key + ":" + val.name);
       nodes.push(new PhiloGL.O3D.Sphere({ nlat: 20, nlong: 20, radius: 1, colors: [1, 0, 0, 1] }));
     });
 
