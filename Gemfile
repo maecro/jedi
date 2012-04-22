@@ -14,6 +14,7 @@ gem 'koala'
 gem 'twitter-bootstrap-rails'
 gem 'heroku'
 gem 'thin'
+gem 'foreman'
 
 
 # Gems used only for assets and not required

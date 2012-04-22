@@ -3,9 +3,8 @@
 # automatically use Facebook settings from here if none are given
 
 module Facebook
-  CONFIG = YAML.load_file(Rails.root.join("config/external.yml"))[Rails.env]
-  APP_ID = CONFIG['fb_app_id']
-  SECRET = CONFIG['fb_secret_key']
+  APP_ID = ENV['FB_ID']
+  SECRET = ENV['FB_SECRET']
 end
 
 Koala::Facebook::OAuth.class_eval do
