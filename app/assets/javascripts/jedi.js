@@ -20,6 +20,7 @@ Jedi = function() {
 
     renderer = new THREE.WebGLRenderer();
     camera = new THREE.PerspectiveCamera(45, 600 / 400, 0.1, 10000);
+
     scene = new THREE.Scene();
     scene.add(camera);
 
