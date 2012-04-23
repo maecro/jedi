@@ -21,23 +21,6 @@ function logout() {
   });
 }
 
-function getNodes() {
-  var nodes = [];
-
-  // Push root node i.e. me
-  nodes.push(new PhiloGL.O3D.Sphere({ nlat: 20, nlong: 20, radius: 1, colors: [1, 0, 0, 1] }));
-
-  FB.api('/me/friends', function(response) {
-
-    $.each(response.data, function(key, val) {
-      nodes.push(new PhiloGL.O3D.Sphere({ nlat: 20, nlong: 20, radius: 1, colors: [1, 0, 0, 1] }));
-    });
-
-  });
-
-  return nodes;
-}
-
 $(function() {
 
   window.fbAsyncInit = function() {
