@@ -1,17 +1,20 @@
 Jedi = function() {
 
-  var camera, scene, renderer, me, layout, controls, nodes = [];
+  var camera, scene, renderer, me, layout, controls;
   var graph = new Graph();
-  //var that=this;
+  var that=this;
+  var geometries = [];
+  var info_text = {};
 
-
-  //this.height = height;
-  //this.width = width;
+  this.height = 600;
+  this.width =  $('#container').width();
+  this.aspect = that.width / that.height;
+  this.domain = 600;
 
   initScene();
+  addThreeLight();
   initControls();
   addNodes();
-  //addEdges();
   createGraph();
   animate();
 
@@ -19,15 +22,14 @@ Jedi = function() {
   function initScene() {
 
     renderer = new THREE.WebGLRenderer();
-    camera = new THREE.PerspectiveCamera(45, 600 / 400, 0.1, 10000);
-
+    camera = new THREE.PerspectiveCamera(45, that.aspect, 1, 10000);
     scene = new THREE.Scene();
+
+    camera.position.set(0, 0, 1000);
     scene.add(camera);
+    scene.fog = new THREE.Fog( 0xffffff, 1, 1000 );
+    renderer.setSize(that.width, that.height);
 
-    camera.position.z = 300;
-    renderer.setSize(600, 400);
-
-    // attatch the canvas to the container
     $('#container').append(renderer.domElement);
 
   }
@@ -51,12 +53,7 @@ Jedi = function() {
   /* Generates a force directed graph. */
   function createGraph() {
 
-    graph.layout = new Layout.ForceDirected(graph, {width: 600, height: 400, iterations: 500, layout: "3d", positionUpdated: function(node) {
-      node.data.sphere.position.x = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
-      node.data.sphere.position.y = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
-      node.data.sphere.position.z = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
-
-    }});
+    graph.layout = new Layout.ForceDirected(graph, {width: that.width, height: that.height, iterations: 5000, layout: "3d"});
     graph.layout.init();
 
   }
@@ -68,13 +65,17 @@ Jedi = function() {
     FB.api('/me', function(response) {
       me = new Node(response.id);
       // randomly position the node
-      me.position.x = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
-      me.position.y = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
-      me.position.z = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
+      me.position.x = Math.floor(Math.random() * that.domain);
+      me.position.y = Math.floor(Math.random() * that.domain);
+      me.position.z = Math.floor(Math.random() * that.domain);
       me.data.title = response.name;
+
+      /*FB.api('/me/picture', function(response) {
+        me.data.image = response;
+      });*/
+
       if(graph.addNode(me)) {
         addThreeSphere(me);
-        addThreeLight();
       }
     });
 
@@ -83,15 +84,19 @@ Jedi = function() {
       $.each(response.data, function(key, val) {
         var n = new Node(val.id);
         // randomly position the node
-        n.position.x = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
-        n.position.y = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
-        n.position.z = Math.floor(Math.random() * (1200 + 1200 + 1) - 1200);
+        n.position.x = Math.floor(Math.random() * that.domain);
+        n.position.y = Math.floor(Math.random() * that.domain);
+        n.position.z = Math.floor(Math.random() * that.domain);
         n.data.title = val.name;
+
+        /*FB.api('/'+val.id+'/picture', function(response) {
+          n.data.image = response;
+        });*/
+
         if(graph.addNode(n)) {
           addThreeSphere(n);
-          addThreeLight();
-          nodes.push(n);
           addEdge(n);
+          connectMutual(n);
         }
       });
     });
@@ -109,10 +114,28 @@ Jedi = function() {
 
   }
 
+  /* Connect each common friend. */
+  function connectMutual(from_node) {
+    FB.api('/me/mutualfriends/'+from_node.id, function(response) {
+      $.each(response.data, function(key, val) {
+        to_node = graph.getNode(val.id);
+        if(graph.addEdge(from_node, to_node)) {
+              addThreeLine(from_node, to_node);
+        }
+      });
+    });
+  }
+
   /* Function adds a sphere to the view */
   function addThreeSphere(node) {
 
-	  var sphereMaterial = new THREE.MeshLambertMaterial({color: 0xCC0000});
+    /*var texture = THREE.ImageUtils.loadTexture(node.data.image);
+    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.repeat.set(125, 125);
+    texture.offset.set(15, 15);
+    texture.needsUpdate = true;*/
+
+	  var sphereMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
 	  var radius = 5, segments = 16, rings = 16;
 
     node.data.sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereMaterial);
@@ -121,6 +144,12 @@ Jedi = function() {
     node.data.sphere.position.x = node.position.x;
     node.data.sphere.position.y = node.position.y;
     node.data.sphere.position.z = node.position.z;
+    // changes to the vertices
+    node.data.sphere.geometry.__dirtyVertices = true;
+
+    // changes to the normals
+    node.data.sphere.geometry.__dirtyNormals = true;
+
 	  scene.add(node.data.sphere);
 
   }
@@ -138,6 +167,8 @@ Jedi = function() {
     line.scale.x = line.scale.y = line.scale.z = 1;
     line.originalScale = 1;
 
+    geometries.push(geometry);
+
     scene.add(line);
 
   }
@@ -145,13 +176,14 @@ Jedi = function() {
   /* Adds a light to the view. */
   function addThreeLight() {
 
-	  var pointLight = new THREE.PointLight( 0xFFFFFF );
+    // add subtle ambient lighting
+    //var ambientLight = new THREE.AmbientLight(0x555555);
+    //scene.add(ambientLight);
 
-	  pointLight.position.x = 10;
-	  pointLight.position.y = 50;
-	  pointLight.position.z = 130;
-
-	  scene.add(pointLight);
+    // add directional light source
+    var directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight.position.set(1, 1, 1).normalize();
+    scene.add(directionalLight);
 
   }
 
@@ -165,6 +197,19 @@ Jedi = function() {
 
   /* Starts the rendering loop. */
   function render() {
+
+    // Generate layout if not finished
+    if(!graph.layout.finished) {
+      $("#notice").html("Calculating Layout...");
+      graph.layout.generate();
+    } else {
+      $("#notice").html("");
+    }
+
+    // Update position of lines (edges)
+    for(var i=0; i< geometries.length; i++) {
+      geometries[i].__dirtyVertices = true;
+    }
 
     controls.update();
     renderer.render( scene, camera );
