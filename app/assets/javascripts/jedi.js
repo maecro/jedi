@@ -27,7 +27,7 @@ Jedi = function() {
     camera.position.set(0, 0, 1000);
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xffffff, 1, 1000);
+    scene.fog = new THREE.Fog(0xffffff, 1, 2000);
     scene.add(camera);
 
     $('#container').append(renderer.domElement);
@@ -135,15 +135,13 @@ Jedi = function() {
   /* Adds a line to the view. */
   function addThreeLine(from, to) {
 
-      material = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 1, linewidth: 0.5 } );
+      material = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 1, linewidth: 1 } );
       var tmp_geo = new THREE.Geometry();
 
       tmp_geo.vertices.push(new THREE.Vertex(from.data.draw_object.position));
       tmp_geo.vertices.push(new THREE.Vertex(to.data.draw_object.position));
 
       line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
-      line.scale.x = line.scale.y = line.scale.z = 1;
-      line.originalScale = 1;
 
       geometries.push(tmp_geo);
 
@@ -153,10 +151,6 @@ Jedi = function() {
 
   /* Adds a light to the view. */
   function addThreeLight() {
-
-    // add subtle ambient lighting
-    //var ambientLight = new THREE.AmbientLight(0x555555);
-    //scene.add(ambientLight);
 
     // add directional light source
     var directionalLight = new THREE.DirectionalLight(0xffffff);
