@@ -79,9 +79,9 @@ Jedi = function() {
         // randomly position the node
         n.data.title = val.name;
 
-        /*FB.api('/'+val.id+'/picture', function(response) {
+        FB.api('/'+val.id+'/picture', function(response) {
           n.data.image = response;
-        });*/
+        });
 
         if(graph.addNode(n)) {
           addThreeSphere(n);
@@ -116,19 +116,24 @@ Jedi = function() {
   /* Function adds a sphere to the view */
   function addThreeSphere(node) {
 
-	  var sphereMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
 	  var radius = 5, segments = 16, rings = 16;
 
-    draw_object = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereMaterial);
+    /*var texture = THREE.ImageUtils.loadTexture(node.data.image);
+    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.repeat.set( 125, 125 );
+    texture.offset.set( 15, 15 );
+    texture.needsUpdate = true;
+    var sphereMaterial = new THREE.MeshBasicMaterial( { map: texture } );
+    draw_object = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings),sphereMaterial);*/
 
-    draw_object.position.x = Math.floor(Math.random() * that.domain);
-    draw_object.position.y = Math.floor(Math.random() * that.domain);
-    draw_object.position.z = Math.floor(Math.random() * that.domain);
+    node.data.visual = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), new THREE.MeshLambertMaterial({color: 0xff0000}));
 
-    draw_object.id = node.id;
-    node.data.draw_object = draw_object;
-    node.position = draw_object.position;
-    scene.add( node.data.draw_object );
+    node.data.visual.position.x = Math.floor(Math.random() * that.domain);
+    node.data.visual.position.y = Math.floor(Math.random() * that.domain);
+    node.data.visual.position.z = Math.floor(Math.random() * that.domain);
+
+    node.position = node.data.visual.position;
+    scene.add( node.data.visual );
 
   }
 
@@ -138,8 +143,8 @@ Jedi = function() {
       material = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 1, linewidth: 1 } );
       var tmp_geo = new THREE.Geometry();
 
-      tmp_geo.vertices.push(new THREE.Vertex(from.data.draw_object.position));
-      tmp_geo.vertices.push(new THREE.Vertex(to.data.draw_object.position));
+      tmp_geo.vertices.push(new THREE.Vertex(from.data.visual.position));
+      tmp_geo.vertices.push(new THREE.Vertex(to.data.visual.position));
 
       line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
 
