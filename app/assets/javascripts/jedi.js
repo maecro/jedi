@@ -59,7 +59,7 @@ Jedi = function() {
     // Add the users node
     FB.api('/me', function(response) {
       me = new Node(response.id);
-      // randomly position the node
+
       me.data.title = response.name;
 
       /*FB.api('/me/picture', function(response) {
@@ -76,7 +76,6 @@ Jedi = function() {
     FB.api('/me/friends', function(response) {
       $.each(response.data, function(key, val) {
         var n = new Node(val.id);
-        // randomly position the node
         n.data.title = val.name;
 
         FB.api('/'+val.id+'/picture', function(response) {
@@ -128,15 +127,9 @@ Jedi = function() {
 
     node.data.visual = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), new THREE.MeshLambertMaterial({color: 0xff0000}));
 
-    /*node.data.visual.position.x = Math.floor(Math.random() * that.domain);
-    node.data.visual.position.y = Math.floor(Math.random() * that.domain);
-    node.data.visual.position.z = Math.floor(Math.random() * that.domain);*/
     setRandomPosition(node);
-
     node.position = node.data.visual.position;
-    //node.data.visual.position.x = node.position.x;
-    //node.data.visual.position.y = node.position.y;
-    //node.data.visual.position.z = node.position.z;
+
     scene.add( node.data.visual );
 
   }
@@ -149,9 +142,6 @@ Jedi = function() {
   }
 
   function setRandomPosition(node) {
-    //node.position.x = Math.floor(Math.random() * that.domain);
-    //node.position.y = Math.floor(Math.random() * that.domain);
-    //node.position.z = Math.floor(Math.random() * that.domain);
     node.data.visual.position.x = Math.floor(Math.random() * that.domain);
     node.data.visual.position.y = Math.floor(Math.random() * that.domain);
     node.data.visual.position.z = Math.floor(Math.random() * that.domain);
