@@ -128,13 +128,33 @@ Jedi = function() {
 
     node.data.visual = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), new THREE.MeshLambertMaterial({color: 0xff0000}));
 
+    /*node.data.visual.position.x = Math.floor(Math.random() * that.domain);
+    node.data.visual.position.y = Math.floor(Math.random() * that.domain);
+    node.data.visual.position.z = Math.floor(Math.random() * that.domain);*/
+    setRandomPosition(node);
+
+    node.position = node.data.visual.position;
+    //node.data.visual.position.x = node.position.x;
+    //node.data.visual.position.y = node.position.y;
+    //node.data.visual.position.z = node.position.z;
+    scene.add( node.data.visual );
+
+  }
+
+  function setPosition(node, position) {
+    position = position || {x: 0, y:0, z:0};
+    node.position.x = position.x;
+    node.position.y = position.y;
+    node.position.z = position.z;
+  }
+
+  function setRandomPosition(node) {
+    //node.position.x = Math.floor(Math.random() * that.domain);
+    //node.position.y = Math.floor(Math.random() * that.domain);
+    //node.position.z = Math.floor(Math.random() * that.domain);
     node.data.visual.position.x = Math.floor(Math.random() * that.domain);
     node.data.visual.position.y = Math.floor(Math.random() * that.domain);
     node.data.visual.position.z = Math.floor(Math.random() * that.domain);
-
-    node.position = node.data.visual.position;
-    scene.add( node.data.visual );
-
   }
 
   /* Adds a line to the view. */
