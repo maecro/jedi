@@ -4,12 +4,13 @@ Jedi = function() {
   var graph = new Graph();
   var that=this;
   var geometries = [];
-  var info_text = {};
 
   this.height = $('#container').height();
   this.width =  $('#container').width();
   this.aspect = that.width / that.height;
   this.domain = (1000 + 1000 + 1) - 1000;
+
+  $.storage = new $.store();
 
   initScene();
   initControls();
@@ -20,14 +21,14 @@ Jedi = function() {
   /* Initialise a three.js, takes the canvas height and width as arguments. */
   function initScene() {
 
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer();
     renderer.setSize(that.width, that.height);
 
     camera = new THREE.PerspectiveCamera(45, that.aspect, 1, 10000);
     camera.position.set(0, 0, 1000);
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xffffff, 1, 2000);
+    scene.fog = new THREE.Fog(0xffffff, 5, 2000);
     scene.add(camera);
 
     $('#container').append(renderer.domElement);
@@ -35,19 +36,19 @@ Jedi = function() {
   }
 
   function initControls() {
-				controls = new THREE.TrackballControls( camera, renderer.domElement );
+	  controls = new THREE.TrackballControls( camera, renderer.domElement );
 
-				controls.rotateSpeed = 1.0;
-				controls.zoomSpeed = 1.2;
-				controls.panSpeed = 0.2;
+	  controls.rotateSpeed = 1.0;
+	  controls.zoomSpeed = 1.2;
+	  controls.panSpeed = 0.2;
 
-				controls.noZoom = false;
-				controls.noPan = false;
+	  controls.noZoom = false;
+	  controls.noPan = false;
 
-				controls.staticMoving = false;
-				controls.dynamicDampingFactor = 0.3;
+	  controls.staticMoving = false;
+	  controls.dynamicDampingFactor = 0.3;
 
-				controls.keys = [ 65, 83, 68 ]; // [ rotateKey, zoomKey, panKey ]
+	  controls.keys = [ 65, 83, 68 ];
   }
 
   /* Generates a force directed graph. */
@@ -60,15 +61,15 @@ Jedi = function() {
     FB.api('/me', function(response) {
       me = new Node(response.id);
 
-      me.data.title = response.name;
+      me.data.color = '0x'+Math.floor(Math.random()*16777215).toString(16);
 
-      /*FB.api('/me/picture', function(response) {
-        me.data.image = response;
-      });*/
+      FB.api('/me/picture', function(image) {
+        $.storage.set(me.id, image);
+      });
 
       if(graph.addNode(me)) {
         addThreeSphere(me);
-    graph.layout.init();
+        graph.layout.init();
       }
     });
 
@@ -76,15 +77,16 @@ Jedi = function() {
     FB.api('/me/friends', function(response) {
       $.each(response.data, function(key, val) {
         var n = new Node(val.id);
-        n.data.title = val.name;
 
-        FB.api('/'+val.id+'/picture', function(response) {
-          n.data.image = response;
+        n.data.color = '0x'+Math.floor(Math.random()*16777215).toString(16);
+
+        FB.api('/'+val.id+'/picture', function(image) {
+          $.storage.set(n.id, image);
         });
 
         if(graph.addNode(n)) {
           addThreeSphere(n);
-    graph.layout.init();
+          graph.layout.init();
           addEdge(me, n);
           connectMutual(n);
         }
@@ -115,60 +117,48 @@ Jedi = function() {
   /* Function adds a sphere to the view */
   function addThreeSphere(node) {
 
-	  var radius = 5, segments = 16, rings = 16;
-
-    /*var texture = THREE.ImageUtils.loadTexture(node.data.image);
-    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
-    texture.repeat.set( 125, 125 );
-    texture.offset.set( 15, 15 );
-    texture.needsUpdate = true;
-    var sphereMaterial = new THREE.MeshBasicMaterial( { map: texture } );
-    draw_object = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings),sphereMaterial);*/
-
-    node.data.visual = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), new THREE.MeshLambertMaterial({color: 0xff0000}));
+    geometry = new THREE.CubeGeometry(10, 10, 10);
+    texture = new THREE.ImageUtils.loadTexture($.storage.get(node.id));
+    material = new THREE.MeshLambertMaterial({map: texture});
+    node.data.mesh = new THREE.Mesh(geometry, material);
 
     setRandomPosition(node);
-    node.position = node.data.visual.position;
 
-    scene.add( node.data.visual );
+    node.position = node.data.mesh.position;
 
-  }
+    scene.add(node.data.mesh);
 
-  function setPosition(node, position) {
-    position = position || {x: 0, y:0, z:0};
-    node.position.x = position.x;
-    node.position.y = position.y;
-    node.position.z = position.z;
   }
 
   function setRandomPosition(node) {
-    node.data.visual.position.x = Math.floor(Math.random() * that.domain);
-    node.data.visual.position.y = Math.floor(Math.random() * that.domain);
-    node.data.visual.position.z = Math.floor(Math.random() * that.domain);
+
+    node.data.mesh.position.x = Math.floor(Math.random() * that.domain);
+    node.data.mesh.position.y = Math.floor(Math.random() * that.domain);
+    node.data.mesh.position.z = Math.floor(Math.random() * that.domain);
+
   }
 
   /* Adds a line to the view. */
   function addThreeLine(from, to) {
 
-      material = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 1, linewidth: 1 } );
-      var tmp_geo = new THREE.Geometry();
+    material = new THREE.LineBasicMaterial({color: from.data.color, opacity: 1, linewidth: 1});
+    geometry = new THREE.Geometry();
 
-      tmp_geo.vertices.push(new THREE.Vertex(from.data.visual.position));
-      tmp_geo.vertices.push(new THREE.Vertex(to.data.visual.position));
+    geometry.vertices.push(new THREE.Vertex(from.data.mesh.position));
+    geometry.vertices.push(new THREE.Vertex(to.data.mesh.position));
 
-      line = new THREE.Line( tmp_geo, material, THREE.LinePieces );
+    line = new THREE.Line(geometry, material, THREE.LinePieces);
 
-      geometries.push(tmp_geo);
+    geometries.push(geometry);
 
-      scene.add( line );
+    scene.add(line);
 
   }
 
   /* Adds a light to the view. */
   function addThreeLight() {
 
-    // add directional light source
-    var directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight = new THREE.DirectionalLight(0xffffff);
     directionalLight.position.set(1, 1, 1).normalize();
     scene.add(directionalLight);
 
@@ -199,6 +189,7 @@ Jedi = function() {
     }
 
     controls.update();
+
     renderer.render( scene, camera );
 
   }
