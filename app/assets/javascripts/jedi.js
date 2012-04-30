@@ -8,7 +8,7 @@ Jedi = function() {
   this.height = $('#container').height();
   this.width =  $('#container').width();
   this.aspect = that.width / that.height;
-  this.domain = (1000 + 1000 + 1) - 1000;
+  this.domain = 1000;
 
   $.storage = new $.store();
 
@@ -25,7 +25,7 @@ Jedi = function() {
     renderer.setSize(that.width, that.height);
 
     camera = new THREE.PerspectiveCamera(45, that.aspect, 1, 10000);
-    camera.position.set(0, 0, 1000);
+    camera.position.set(1000, 1000, 1000);
 
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0xffffff, 5, 2000);
@@ -36,7 +36,7 @@ Jedi = function() {
   }
 
   function initControls() {
-	  controls = new THREE.TrackballControls( camera, renderer.domElement );
+	  controls = new THREE.TrackballControls(camera, renderer.domElement);
 
 	  controls.rotateSpeed = 1.0;
 	  controls.zoomSpeed = 1.2;
@@ -54,7 +54,7 @@ Jedi = function() {
   /* Generates a force directed graph. */
   function createGraph() {
 
-    graph.layout = new Layout.ForceDirected(graph, {width: 1000, height: 1000, iterations: 5000, layout: "3d"});
+    graph.layout = new Layout.ForceDirected(graph, {width: that.width, height: that.height, iterations: 5000, layout: "3d"});
     graph.layout.init();
 
     // Add the users node
